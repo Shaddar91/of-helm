@@ -2,7 +2,7 @@ replicaCount: 2
 
 image:
   repository: ""
-  tag: CHANGEME
+  tag: 1085c3912b9dd3c6167be8eac12ac23b83c3bccc
   pullPolicy: IfNotPresent
 
 nameOverride: ""
