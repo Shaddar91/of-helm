@@ -1,0 +1,5 @@
+apiVersion: v2
+name: of-load
+description: Stress API that drives pod and node autoscaling
+type: application
+version: 0.1.0
