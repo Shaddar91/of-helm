@@ -2,7 +2,7 @@ replicaCount: 2
 
 image:
   repository: ""
-  tag: fe7703bcc7175a90b60d84e9a6e379e288954ec6
+  tag: "fe7703bcc7175a90b60d84e9a6e379e288954ec6"
   pullPolicy: IfNotPresent
 
 nameOverride: ""
