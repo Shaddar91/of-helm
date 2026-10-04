@@ -1,0 +1,15 @@
+{{- $arn := required "targetGroupBinding.targetGroupARN is required (Terraform sets it through the Argo CD Application)" .Values.targetGroupBinding.targetGroupARN }}
+apiVersion: elbv2.k8s.aws/v1beta1
+kind: TargetGroupBinding
+metadata:
+  name: {{ printf "%s-%s" (include "of-api.fullname" . | trunc 54 | trimSuffix "-") ($arn | sha256sum | trunc 8) }}
+  labels:
+    {{- include "of-api.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  serviceRef:
+    name: {{ include "of-api.fullname" . }}
+    port: {{ .Values.service.port }}
+  targetGroupARN: {{ $arn }}
+  targetType: ip
