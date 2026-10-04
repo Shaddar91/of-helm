@@ -1,4 +1,4 @@
-{{- if .Values.dbMigrate.enabled }}
+{{- if and .Values.dbMigrate.enabled (has .Values.keda.awsRegion .Values.dbMigrate.writerRegions) }}
 apiVersion: batch/v1
 kind: Job
 metadata:

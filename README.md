@@ -71,7 +71,7 @@ Settings come from Secrets Manager, never from values. The SecretProviderClass m
 
 ## What each chart renders
 
-Deployment, Service, ServiceAccount, HPA (`autoscaling/v2`, 2 to 5 pods at 70% CPU), PDB (`maxUnavailable: 1`), zone and host spread, a TargetGroupBinding into the service's target group on the edge ALB, and the SecretProviderClass. of-api adds the `db-migrate` Job, an Argo CD PreSync hook running `flask --app app init-db` from the same image, so the API pods only roll once the schema step succeeded. Probes are on `/healthz`. KEDA scaling on ALB requests is in the chart, off by default (`keda.enabled`). Resources, replicas, probes, graceful shutdown (`preStopSleepSeconds`, `terminationGracePeriodSeconds`) and `stress.levels` for of-load are all in `values.yaml`.
+Deployment, Service, ServiceAccount, HPA (`autoscaling/v2`, 2 to 5 pods at 70% CPU), PDB (`maxUnavailable: 1`), zone and host spread, a TargetGroupBinding into the service's target group on the edge ALB, and the SecretProviderClass. of-api adds the `db-migrate` Job, an Argo CD PreSync hook running `flask --app app init-db` from the same image, so the API pods only roll once the schema step succeeded. It runs only in the regions in `dbMigrate.writerRegions` (matched against `keda.awsRegion`), the one holding the database writer; the read-only copy gets the schema by replication. Probes are on `/healthz`. KEDA scaling on ALB requests is in the chart, off by default (`keda.enabled`). Resources, replicas, probes, graceful shutdown (`preStopSleepSeconds`, `terminationGracePeriodSeconds`) and `stress.levels` for of-load are all in `values.yaml`.
 
 ## Render locally
 

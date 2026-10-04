@@ -51,6 +51,9 @@ secrets:
 
 dbMigrate:
   enabled: true
+  #the job runs only where keda.awsRegion is listed: the region holding the database writer
+  writerRegions:
+    - us-east-1
   command:
     - sh
     - -c
