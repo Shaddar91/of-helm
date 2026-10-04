@@ -1,8 +1,0 @@
-nodeSelector:
-  kubernetes.io/arch: arm64
-
-tolerations:
-  - key: arch
-    operator: Equal
-    value: arm64
-    effect: NoSchedule
