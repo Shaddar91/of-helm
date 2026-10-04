@@ -1,0 +1,119 @@
+replicaCount: 2
+
+image:
+  repository: ""
+  tag: 09989d1077108634225aa37a7b9c383d7543078c
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+  automount: false
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: [ALL]
+  seccompProfile:
+    type: RuntimeDefault
+
+service:
+  type: ClusterIP
+  port: 80
+
+targetGroupBinding: {}
+
+env: []
+
+secrets:
+  enabled: true
+  usePodIdentity: true
+  app:
+    name: ""
+    keys: [TOKEN_TTL_SECONDS, CORS_ALLOWED_ORIGINS, OF_API_USER, OF_API_USER_PASSWORD]
+  db:
+    name: ""
+    keys:
+      host: DB_HOST
+      port: DB_PORT
+      dbname: DB_NAME
+      username: DB_USER
+      password: DB_PASSWORD
+
+dbMigrate:
+  enabled: true
+  command:
+    - sh
+    - -c
+    - flask --app app init-db && OF_API_USER_PASSWORD="$(cat "$SECRETS_DIR/OF_API_USER_PASSWORD")" flask --app app create-user "$(cat "$SECRETS_DIR/OF_API_USER")"
+  backoffLimit: 2
+  activeDeadlineSeconds: 300
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      memory: 128Mi
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: http
+
+readinessProbe:
+  httpGet:
+    path: /healthz
+    port: http
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+
+pdb:
+  enabled: true
+  maxUnavailable: 1
+  unhealthyPodEvictionPolicy: AlwaysAllow
+
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: ScheduleAnyway
+  - maxSkew: 1
+    topologyKey: kubernetes.io/hostname
+    whenUnsatisfiable: ScheduleAnyway
+
+preStopSleepSeconds: 20
+terminationGracePeriodSeconds: 60
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+keda:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 5
+  requestsPerPodPerMinute: 300
+  cpuTriggerUtilization: 70
+  pollingInterval: 30
+  cooldownPeriod: 120
+  awsRegion: ""
+  loadBalancerARN: ""
