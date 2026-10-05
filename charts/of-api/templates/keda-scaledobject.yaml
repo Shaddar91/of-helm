@@ -1,0 +1,41 @@
+{{- if .Values.keda.enabled }}
+{{- if .Values.autoscaling.enabled }}
+{{- fail "keda.enabled and autoscaling.enabled are exclusive: KEDA owns the HPA" }}
+{{- end }}
+{{- $tg := required "targetGroupBinding.targetGroupARN is required for keda (Terraform sets it through the Argo CD Application)" .Values.targetGroupBinding.targetGroupARN }}
+{{- $lb := required "keda.loadBalancerARN is required for keda (the edge ALB ARN)" .Values.keda.loadBalancerARN }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ include "of-api.fullname" . }}
+  labels:
+    {{- include "of-api.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    name: {{ include "of-api.fullname" . }}
+  minReplicaCount: {{ .Values.keda.minReplicas }}
+  maxReplicaCount: {{ .Values.keda.maxReplicas }}
+  pollingInterval: {{ .Values.keda.pollingInterval }}
+  cooldownPeriod: {{ .Values.keda.cooldownPeriod }}
+  triggers:
+    - type: aws-cloudwatch
+      metadata:
+        identityOwner: operator
+        awsRegion: {{ .Values.keda.awsRegion | quote }}
+        namespace: AWS/ApplicationELB
+        metricName: RequestCount
+        dimensionName: "TargetGroup;LoadBalancer"
+        dimensionValue: "{{ regexReplaceAll "^.*:" $tg "" }};{{ regexReplaceAll "^.*:loadbalancer/" $lb "" }}"
+        metricStat: Sum
+        metricStatPeriod: "60"
+        metricCollectionTime: "120"
+        metricEndTimeOffset: "60"
+        targetMetricValue: {{ .Values.keda.requestsPerPodPerMinute | quote }}
+        minMetricValue: "0"
+    {{- if .Values.keda.cpuTriggerUtilization }}
+    - type: cpu
+      metricType: Utilization
+      metadata:
+        value: {{ .Values.keda.cpuTriggerUtilization | quote }}
+    {{- end }}
+{{- end }}
