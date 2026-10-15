@@ -2,7 +2,7 @@ replicaCount: 2
 
 image:
   repository: ""
-  tag: "6e43b2b329fbf389093cd2fa9c34e68871cc3d71"
+  tag: 09989d1077108634225aa37a7b9c383d7543078c
   pullPolicy: IfNotPresent
 
 nameOverride: ""
@@ -51,9 +51,6 @@ secrets:
 
 dbMigrate:
   enabled: true
-  #the job runs only where keda.awsRegion is listed: the region holding the database writer
-  writerRegions:
-    - us-east-1
   command:
     - sh
     - -c
